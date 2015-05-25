@@ -43,6 +43,12 @@ class varnish::params {
           $vcl_reload         = '/usr/share/varnish/reload-vcl'
 
         }
+        'jessie': {
+          $addrepo            = false
+          $sysconfig          = '/etc/default/varnish'
+          $varnish_version    = '4.0'
+          $vcl_reload         = '/usr/share/varnish/reload-vcl'
+        }
         default: {
           fail("${::operatingsystem} (${::lsbdistdescription}, ${::lsbdistcodename}) not supported")
         }
