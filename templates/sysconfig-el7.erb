@@ -17,6 +17,10 @@ VARNISH_TTL=120
 
 DAEMON_OPTS="<% scope['::varnish::runtime_params'].each do |k,v| -%>-p <%= k %>=<%= v %> \
 <% end -%>
+<% if scope['::varnish::varnish_version'] == '3.0' -%>
+-w <%= scope['::varnish::min_threads'] %>,<%= scope['::varnish::max_threads'] %>,<%= scope['::varnish::thread_timeout'] %>"
+<% elsif scope['::varnish::varnish_version'] == '4.0' -%>
 -p thread_pool_min=<%= scope['::varnish::min_threads'] %> \
 -p thread_pool_max=<%= scope['::varnish::max_threads'] %> \
 -p thread_pool_timeout=<%= scope['::varnish::thread_timeout'] %>"
+<% end -%>

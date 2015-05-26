@@ -4,31 +4,35 @@
 # It sets variables according to platform
 #
 class varnish::params {
-  
+
   $package_name = 'varnish'
   $service_name = 'varnish'
-  
+
   case $::osfamily {
     'RedHat', 'Amazon': {
       $vcl_reload   = '/usr/bin/varnish_reload_vcl'
+      $systemd      = false
 
       case $::operatingsystemmajrelease {
         '6': {
           $addrepo            = true
           $repoclass          = "varnish::repo::el${::operatingsystemmajrelease}"
           $sysconfig          = '/etc/sysconfig/varnish'
+          $sysconfig_template = 'varnish/default-init.erb'
           $varnish_version    = '3.0'
         }
         '7': {
           $addrepo            = true
           $repoclass          = "varnish::repo::el${::operatingsystemmajrelease}"
           $sysconfig          = '/etc/varnish/varnish.params'
+          $sysconfig_template = "varnish/sysconfig-el${::operatingsystemmajrelease}.erb"
           $varnish_version    = '4.0'
         }
         default: {
           # Amazon Linux
           $addrepo            = true
           $repoclass          = "varnish::repo::el${::operatingsystemmajrelease}"
+          $sysconfig_template = "varnish/sysconfig-el${::operatingsystemmajrelease}.erb"
           $sysconfig          = '/etc/sysconfig/varnish'
           $varnish_version    = '3.0'
         }
@@ -38,14 +42,17 @@ class varnish::params {
       case $::lsbdistcodename {
         'precise': {
           $addrepo            = false
+          $systemd            = false
           $sysconfig          = '/etc/default/varnish'
+          $sysconfig_template = 'varnish/default-init.erb'
           $varnish_version    = '3.0'
           $vcl_reload         = '/usr/share/varnish/reload-vcl'
-
         }
         'jessie': {
           $addrepo            = false
-          $sysconfig          = '/etc/default/varnish'
+          $systemd            = true
+          $sysconfig          = '/etc/systemd/system/varnish.service'
+          $sysconfig_template = 'varnish/systemd-service.erb'
           $varnish_version    = '4.0'
           $vcl_reload         = '/usr/share/varnish/reload-vcl'
         }
@@ -73,5 +80,7 @@ class varnish::params {
   $storage_file   = '/var/lib/varnish/varnish_storage.bin'
   $storage_size   = '1G'
   $package_ensure = 'present'
+  $service_user   = 'varnish'
+  $service_group  = 'varnish'
+  $ttl            = 120
 }
-

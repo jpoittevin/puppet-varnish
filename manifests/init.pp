@@ -55,6 +55,9 @@ class varnish (
   $varnish_version = $varnish::params::varnish_version,
   $vcl_reload      = $varnish::params::vcl_reload,
   $package_ensure  = $varnish::params::package_ensure,
+  $service_user    = $varnish::params::service_user,
+  $service_group   = $varnish::params::service_group,
+  $ttl             = $varnish::params::ttl,
   $runtime_params  = {}
 ) inherits varnish::params {
 

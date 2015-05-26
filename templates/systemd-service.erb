@@ -1,0 +1,33 @@
+[Unit]
+Description=Varnish HTTP accelerator
+
+[Service]
+Type=forking
+LimitNOFILE=131072
+LimitMEMLOCK=82000
+ExecStartPre=/usr/sbin/varnishd -C -f <%= scope['::varnish::vcl_conf'] %>
+ExecStart=/usr/sbin/varnishd -a <%= scope['::varnish::listen'] %>:<%= scope['::varnish::listen_port'] %> \
+             -T <%= scope['::varnish::admin_listen'] %>:<%= scope['::varnish::admin_port'] %> \
+             -t <%= scope['::varnish::ttl'] %> \
+<% if scope['::varnish::varnish_version'] == '3.0' -%>
+             -w <%= scope['::varnish::min_threads'] %>,<%= scope['::varnish::max_threads'] %>,<%= scope['::varnish::thread_timeout'] %> \
+<% elsif scope['::varnish::varnish_version'] == '4.0' -%>
+             -p thread_pool_min=<%= scope['::varnish::min_threads'] %> \
+             -p thread_pool_max=<%= scope['::varnish::max_threads'] %> \
+             -p thread_pool_timeout=<%= scope['::varnish::thread_timeout'] %> \
+<% end -%>
+             -u <%= scope['::varnish::service_user'] %> -g <%= scope['::varnish::service_group'] %> \
+             -S <%= scope['::varnish::secret_file'] %> \
+<% scope['::varnish::runtime_params'].each do |k,v| -%>
+             -p <%= k %>=<%= v %> \
+<% end -%>
+<% if scope['::varnish::storage_type'] == 'malloc' -%>
+             -s malloc,<%= scope['::varnish::storage_size'] %> \
+<% elsif scope['::varnish::storage_type'] == 'file' -%>
+             -s file,<%= scope['::varnish::storage_file'] %>,<%= scope['::varnish::storage_size'] %> \
+<% end -%>
+             -f <%= scope['::varnish::vcl_conf'] %>
+ExecReload=/usr/share/varnish/reload-vcl
+
+[Install]
+WantedBy=multi-user.target
